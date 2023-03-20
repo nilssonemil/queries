@@ -1,5 +1,6 @@
 package solutions.shitops.query.infrastructure
 
+import doobie.ConnectionIO
 import doobie.implicits.toSqlInterpolator
 
 /* Needed to get map java.util.UUID to postgres */
@@ -11,7 +12,7 @@ import java.util.UUID
 object QuestionRepository {
   case class Question(id: UUID, title: String)
 
-  def getQuestions: doobie.ConnectionIO[List[Question]] =
+  def getQuestions: ConnectionIO[List[Question]] =
     sql"select id, title from questions"
       .query[Question]
       .to[List]

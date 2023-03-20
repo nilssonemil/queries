@@ -43,9 +43,9 @@ object Main extends IOApp {
     )
   } yield xa
 
-  private def userService() = HttpRoutes.of[IO] {
+  private def userService(transactor: HikariTransactor[IO]) = HttpRoutes.of[IO] {
     case GET -> Root / "users" =>
-      Ok(UserRepository.getUsers)
+      UserRepository.getUsers.transact(transactor).flatMap(Ok(_))
   }
 
 
@@ -55,7 +55,7 @@ object Main extends IOApp {
     }
   }
   private def services(transactor: HikariTransactor[IO]) =
-    questionService(transactor) <+> userService()
+    questionService(transactor) <+> userService(transactor)
 
   private def httpApp(transactor: HikariTransactor[IO]) =
     Router("/" -> services(transactor)).orNotFound
