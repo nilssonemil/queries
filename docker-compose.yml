@@ -14,4 +14,23 @@ services:
       - ./sql/001-init.sql:/docker-entrypoint-initdb.d/001-init.sql
       - ./sql/002-data.sql:/docker-entrypoint-initdb.d/002-data.sql
       # Persist data
-      - /var/opt/queries/:/var/lib/postgresql/data
+      - /var/opt/queries/postgresql/:/var/lib/postgresql/data
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldap
+    restart: always
+    command: --copy-service
+    ports:
+      - 389:389
+      - 636:636
+    environment:
+      LDAP_ORGANISATION: queries
+      LDAP_DOMAIN: queries.org
+      LDAP_BASE_DN: dc=queries,dc=org
+      LDAP_ADMIN_USERNAME: admin
+      LDAP_ADMIN_PASSWORD: admin
+    volumes:
+      # Load bootstrapping files
+      - ./ldap/bootstrap/:/container/service/slapd/assets/config/bootstrap/ldif/custom
+      # Persist data
+      - /var/opt/queries/ldap/:/var/lib/ldap

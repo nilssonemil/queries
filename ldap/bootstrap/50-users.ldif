@@ -1,0 +1,21 @@
+# users organizational unit
+dn: ou=users,dc=queries,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: users
+
+# users - tom.hanks
+dn: uid=tom.hanks,ou=users,dc=queries,dc=org
+cn: Tom
+sn: Hanks
+uid: tom.hanks
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - marie.curie
+dn: uid=marie.curie,ou=users,dc=queries,dc=org
+cn: Marie
+sn: Curie
+uid: marie.curie
+objectClass: top
+objectClass: inetOrgPerson
