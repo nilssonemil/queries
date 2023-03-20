@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   "org.tpolecat" %% "doobie-core" % doobieVersion,
   "org.tpolecat" %% "doobie-hikari" % doobieVersion,
   "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+  "ch.qos.logback" % "logback-classic" % "1.4.6",
 
   // Test dependencies
   "io.circe" %% "circe-literal" % circeVersion % Test,
