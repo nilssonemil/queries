@@ -9,6 +9,7 @@ dn: uid=tom.hanks,ou=users,dc=queries,dc=org
 cn: Tom
 sn: Hanks
 uid: tom.hanks
+userPassword: tom
 objectClass: top
 objectClass: inetOrgPerson
 
@@ -17,5 +18,6 @@ dn: uid=marie.curie,ou=users,dc=queries,dc=org
 cn: Marie
 sn: Curie
 uid: marie.curie
+userPassword: marie
 objectClass: top
 objectClass: inetOrgPerson
