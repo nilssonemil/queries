@@ -1,0 +1,17 @@
+version: "3.1"
+services:
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: queries
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      # Load init scripts
+      - ./sql/001-init.sql:/docker-entrypoint-initdb.d/001-init.sql
+      - ./sql/002-data.sql:/docker-entrypoint-initdb.d/002-data.sql
+      # Persist data
+      - /var/opt/queries/:/var/lib/postgresql/data
