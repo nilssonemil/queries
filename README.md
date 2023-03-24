@@ -1,5 +1,10 @@
 # Queries
 
+## TODO
+
+- [ ] Synchronize LDAP server with user table on sign in
+- [ ] Enforce LDAP authentication for all routes
+
 ## LDAP
 
 ### search
