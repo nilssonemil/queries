@@ -1,25 +1,36 @@
 package solutions.shitops.query.app
 
 import cats.effect.IO
-import io.circe.generic.auto._
-import org.http4s.HttpRoutes
 import cats.effect._
 import cats.implicits.toSemigroupKOps
-import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import org.http4s.dsl.io._
 import com.comcast.ip4s._
 import doobie.hikari.HikariTransactor
+import doobie.implicits._
 import doobie.util.ExecutionContexts
+import io.circe.generic.auto._
+import org.http4s.AuthedRoutes
+import org.http4s.HttpRoutes
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+import org.http4s.dsl.io._
 import org.http4s.ember.server._
 import org.http4s.implicits._
 import org.http4s.server.Router
-import solutions.shitops.query.infrastructure.{QuestionRepository, UserRepository}
-import doobie.implicits._
-
-case class Question(title: String)
+import solutions.shitops.query.core.Domain._
+import solutions.shitops.query.infrastructure.QuestionRepository
+import solutions.shitops.query.infrastructure.Token
+import solutions.shitops.query.infrastructure.TokenService
+import solutions.shitops.query.infrastructure.ldap.DefaultContextFactory
+import solutions.shitops.query.infrastructure.ldap.LdapConfiguration
+import solutions.shitops.query.infrastructure.ldap.LdapService
+import solutions.shitops.query.infrastructure.middleware.AuthenticationMiddleware
 
 object Main extends IOApp {
-  override def run(args: List[String]): IO[ExitCode] = {
+
+  private val authenticationService: AuthenticationService =
+    new LdapService(LdapConfiguration("ldap://localhost:389"), new DefaultContextFactory())
+  private val tokenService: TokenService                   = new TokenService("secretkey", 10000)
+  private val middleware = new AuthenticationMiddleware(authenticationService, tokenService)
+  override def run(args: List[String]): IO[ExitCode] =
     transactor.use { xa =>
       EmberServerBuilder
         .default[IO]
@@ -30,33 +41,44 @@ object Main extends IOApp {
         .useForever
         .as(ExitCode.Success)
     }
-  }
 
   private val transactor: Resource[IO, HikariTransactor[IO]] = for {
     ce <- ExecutionContexts.fixedThreadPool[IO](32)
     xa <- HikariTransactor.newHikariTransactor[IO](
       "org.postgresql.Driver",
       "jdbc:postgresql:queries", // database
-      "postgres", // user
-      "postgres", // password
+      "postgres",                // user
+      "postgres",                // password
       ce,
     )
   } yield xa
 
-  private def userService(transactor: HikariTransactor[IO]) = HttpRoutes.of[IO] {
-    case GET -> Root / "users" =>
-      UserRepository.getUsers.transact(transactor).flatMap(Ok(_))
-  }
+  case class TokenResponse(token: String)
 
+  private val tokenRoutes =
+    AuthedRoutes.of[Identity, IO] { case POST -> Root / "token" as identity =>
+      val token: Token            = tokenService.generateToken(identity)
+      val response: TokenResponse = TokenResponse(token.encoded)
+      Ok(response)
+    }
 
-  private def questionService(transactor: HikariTransactor[IO]) = HttpRoutes.of[IO] {
-    case GET -> Root / "questions" => {
+  private def publicRoutes(transactor: HikariTransactor[IO]) =
+    HttpRoutes.of[IO] { case GET -> Root / "questions" =>
       QuestionRepository.getQuestions.transact(transactor).flatMap(Ok(_))
     }
-  }
-  private def services(transactor: HikariTransactor[IO]) =
-    questionService(transactor) <+> userService(transactor)
+
+  private def privateRoutes(
+      transactor: HikariTransactor[IO],
+  ): AuthedRoutes[Identity, IO] =
+    AuthedRoutes.of { case POST -> Root / "questions" as identity =>
+      Created(s"Welcome, ${identity.value}")
+    }
+
+  private def routes(transactor: HikariTransactor[IO]): HttpRoutes[IO] =
+    middleware.basicAuth(tokenRoutes) <+>
+      publicRoutes(transactor) <+>
+      middleware.tokenAuth(privateRoutes(transactor))
 
   private def httpApp(transactor: HikariTransactor[IO]) =
-    Router("/" -> services(transactor)).orNotFound
+    Router("/" -> routes(transactor)).orNotFound
 }
