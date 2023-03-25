@@ -1,5 +1,6 @@
 package solutions.shitops.queries.infrastructure.ldap
 
+import solutions.shitops.queries.app.Settings
 import solutions.shitops.queries.core.Domain._
 
 import java.util.Properties
@@ -16,13 +17,12 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-case class LdapConfiguration(providerUrl: String)
 case class SecurityPrincipal(username: Username, password: Password) {
   val distinguishedName = s"uid=${username.value},ou=users,dc=queries,dc=org"
   val credentials       = password.value
 }
 
-class LdapService(config: LdapConfiguration, contextFactory: ContextFactory)
+class LdapService(settings: Settings, contextFactory: ContextFactory)
     extends AuthenticationService {
 
   private val initialContextFactory = "com.sun.jndi.ldap.LdapCtxFactory"
@@ -32,7 +32,7 @@ class LdapService(config: LdapConfiguration, contextFactory: ContextFactory)
       password: Password
   ): Either[AuthenticationError, Identity] = {
     val principal  = createSecurityPrincipal(username, password)
-    val properties = buildProperties(principal, config)
+    val properties = buildProperties(principal, settings)
     val context    = initializeContext(contextFactory, properties)
     context.map(_ => Identity(username.value))
   }
@@ -40,15 +40,14 @@ class LdapService(config: LdapConfiguration, contextFactory: ContextFactory)
   val createSecurityPrincipal: (Username, Password) => SecurityPrincipal = (username, password) =>
     SecurityPrincipal(username, password)
 
-  val buildProperties: (SecurityPrincipal, LdapConfiguration) => Properties = (principal, config) =>
-    {
-      val props = new Properties()
-      props.put(SECURITY_PRINCIPAL, principal.distinguishedName)
-      props.put(SECURITY_CREDENTIALS, principal.credentials)
-      props.put(PROVIDER_URL, config.providerUrl)
-      props.put(INITIAL_CONTEXT_FACTORY, initialContextFactory)
-      props
-    }
+  val buildProperties: (SecurityPrincipal, Settings) => Properties = (principal, config) => {
+    val props = new Properties()
+    props.put(SECURITY_PRINCIPAL, principal.distinguishedName)
+    props.put(SECURITY_CREDENTIALS, principal.credentials)
+    props.put(PROVIDER_URL, settings.ldapUri)
+    props.put(INITIAL_CONTEXT_FACTORY, initialContextFactory)
+    props
+  }
 
   val initializeContext: (ContextFactory, Properties) => Either[AuthenticationError, Context] =
     (factory, props) =>

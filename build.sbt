@@ -14,6 +14,7 @@ libraryDependencies ++= Seq(
   "org.tpolecat"         %% "doobie-postgres"               % doobieVersion,
   "ch.qos.logback"        % "logback-classic"               % "1.4.6",
   "com.github.jwt-scala" %% "jwt-circe"                     % "9.2.0",
+  "com.typesafe"          % "config"                        % "1.4.2",
   // Test dependencies
   "org.scalatest"        %% "scalatest-freespec"            % "3.2.15"     % Test,
   "org.typelevel"        %% "cats-effect-testing-scalatest" % "1.4.0"      % Test,
