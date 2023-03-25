@@ -4,8 +4,6 @@ import cats.effect.IO
 import cats.effect._
 import cats.implicits.toSemigroupKOps
 import com.comcast.ip4s._
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.ExecutionContexts
@@ -27,17 +25,17 @@ import solutions.shitops.queries.infrastructure.ldap.LdapService
 import solutions.shitops.queries.infrastructure.middleware.AuthenticationMiddleware
 
 object Main extends IOApp {
-  private val settings                                     = Settings.fromEnvironment()
+  private val config                                       = Config.fromEnvironment()
   private val authenticationService: AuthenticationService =
-    new LdapService(settings, new DefaultContextFactory())
-  private val tokenService                                 = new TokenService(settings)
+    new LdapService(config.ldap, new DefaultContextFactory())
+  private val tokenService                                 = new TokenService(config.security)
   private val middleware = new AuthenticationMiddleware(authenticationService, tokenService)
   override def run(args: List[String]): IO[ExitCode] =
     transactor.use { xa =>
       EmberServerBuilder
         .default[IO]
-        .withHost(settings.serverAddress)
-        .withPort(settings.serverPort)
+        .withHost(config.server.address)
+        .withPort(config.server.port)
         .withHttpApp(httpApp(xa))
         .build
         .useForever
@@ -45,12 +43,12 @@ object Main extends IOApp {
     }
 
   private val transactor: Resource[IO, HikariTransactor[IO]] = for {
-    ce <- ExecutionContexts.fixedThreadPool[IO](settings.databasePoolSize)
+    ce <- ExecutionContexts.fixedThreadPool[IO](config.db.poolSize)
     xa <- HikariTransactor.newHikariTransactor[IO](
       "org.postgresql.Driver",
-      settings.databaseUri,
-      settings.databaseUser,
-      settings.databasePass,
+      config.db.uri,
+      config.db.user,
+      config.db.password,
       ce,
     )
   } yield xa

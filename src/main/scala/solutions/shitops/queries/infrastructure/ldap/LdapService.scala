@@ -1,7 +1,7 @@
 package solutions.shitops.queries.infrastructure.ldap
 
-import solutions.shitops.queries.app.Settings
 import solutions.shitops.queries.core.Domain._
+import solutions.shitops.queries.app.LdapConfig
 
 import java.util.Properties
 import javax.naming.AuthenticationException
@@ -22,17 +22,17 @@ case class SecurityPrincipal(username: Username, password: Password) {
   val credentials       = password.value
 }
 
-class LdapService(settings: Settings, contextFactory: ContextFactory)
+class LdapService(config: LdapConfig, contextFactory: ContextFactory)
     extends AuthenticationService {
 
   private val initialContextFactory = "com.sun.jndi.ldap.LdapCtxFactory"
 
   override def authenticate(
       username: Username,
-      password: Password
+      password: Password,
   ): Either[AuthenticationError, Identity] = {
     val principal  = createSecurityPrincipal(username, password)
-    val properties = buildProperties(principal, settings)
+    val properties = buildProperties(principal, config)
     val context    = initializeContext(contextFactory, properties)
     context.map(_ => Identity(username.value))
   }
@@ -40,11 +40,11 @@ class LdapService(settings: Settings, contextFactory: ContextFactory)
   val createSecurityPrincipal: (Username, Password) => SecurityPrincipal = (username, password) =>
     SecurityPrincipal(username, password)
 
-  val buildProperties: (SecurityPrincipal, Settings) => Properties = (principal, config) => {
+  val buildProperties: (SecurityPrincipal, LdapConfig) => Properties = (principal, config) => {
     val props = new Properties()
     props.put(SECURITY_PRINCIPAL, principal.distinguishedName)
     props.put(SECURITY_CREDENTIALS, principal.credentials)
-    props.put(PROVIDER_URL, settings.ldapUri)
+    props.put(PROVIDER_URL, config.uri)
     props.put(INITIAL_CONTEXT_FACTORY, initialContextFactory)
     props
   }

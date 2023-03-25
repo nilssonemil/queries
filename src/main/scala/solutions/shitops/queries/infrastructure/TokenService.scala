@@ -7,7 +7,7 @@ import pdi.jwt.JwtClaim
 import solutions.shitops.queries.core.Domain.AuthenticationError
 import solutions.shitops.queries.core.Domain.Identity
 import solutions.shitops.queries.core.Domain.InvalidCredentials
-import solutions.shitops.queries.app.Settings
+import solutions.shitops.queries.app.SecurityConfig
 
 import java.time.Instant
 import scala.util.Failure
@@ -17,22 +17,22 @@ import scala.util.Try
 case class TokenConfiguration(secretKey: String, expirationInSeconds: Int)
 case class Token(encoded: String)
 
-class TokenService(settings: Settings) {
+class TokenService(config: SecurityConfig) {
   private val alg = JwtAlgorithm.HS512
 
   private val generateClaim: Identity => JwtClaim = identity =>
     JwtClaim(
       subject = Some(identity.value),
-      expiration = Some(Instant.now.plusSeconds(settings.tokenExpirationInSeconds).getEpochSecond),
+      expiration = Some(Instant.now.plusSeconds(config.tokenExpirationInSeconds).getEpochSecond),
       issuedAt = Some(Instant.now.getEpochSecond),
     )
 
   private val encode: JwtClaim => Token =
-    claim => Token(JwtCirce.encode(claim, settings.secretKey, alg))
+    claim => Token(JwtCirce.encode(claim, config.secretKey, alg))
 
   private val decode: Token => Either[AuthenticationError, JwtClaim] =
     token =>
-      JwtCirce.decode(token.encoded, settings.secretKey, Seq(alg)) match {
+      JwtCirce.decode(token.encoded, config.secretKey, Seq(alg)) match {
         case Success(claim) => Right(claim)
         case Failure(t)     => Left(InvalidCredentials)
       }

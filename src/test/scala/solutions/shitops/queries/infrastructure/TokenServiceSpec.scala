@@ -5,8 +5,10 @@ import solutions.shitops.queries.core.Domain.Identity
 
 import solutions.shitops.queries.infrastructure.{Token, TokenService}
 import solutions.shitops.queries.core.Domain
+import solutions.shitops.queries.app.SecurityConfig
+
 class TokenServiceSpec extends BaseSpec {
-  val service = new TokenService("secret", 10000)
+  val service = new TokenService(SecurityConfig("secretkey", 1000))
 
   "generateToken" - {
     val identity = Identity("tom.hanks")

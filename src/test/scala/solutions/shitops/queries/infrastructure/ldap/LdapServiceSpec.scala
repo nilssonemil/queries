@@ -23,15 +23,17 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-import solutions.shitops.queries.infrastructure.ldap.{LdapConfiguration, SecurityPrincipal, LdapService}
+import solutions.shitops.queries.infrastructure.ldap.{SecurityPrincipal, LdapService}
 import solutions.shitops.queries.infrastructure.ldap.{Context, ContextFactory}
 import solutions.shitops.queries.core.Domain
+import solutions.shitops.queries.app.LdapConfig
+
 class LdapServiceSpec extends BaseSpec {
   val contextFactory = new ContextFactory {
     override def create(properties: Properties): Try[Context] =
       Success(new Context(new InitialDirContext))
   }
-  val config         = LdapConfiguration("ldap://queries.org:389")
+  val config         = LdapConfig("ldap://queries.org:389")
   val service        = new LdapService(config, contextFactory)
   "authenticate" - {
     val identity = service.authenticate(Username("tom.hanks"), Password("tom"))
@@ -120,7 +122,7 @@ class LdapServiceSpec extends BaseSpec {
 
     "AuthenticationException returns InvalidCredentials" in {
       createWithError(
-        new AuthenticationException("invalid credentials")
+        new AuthenticationException("invalid credentials"),
       ).left.value shouldBe InvalidCredentials
     }
 
