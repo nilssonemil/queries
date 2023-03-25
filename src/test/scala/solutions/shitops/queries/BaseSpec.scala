@@ -1,4 +1,4 @@
-package solutions.shitops.query
+package solutions.shitops.queries
 
 import cats.effect.testing.scalatest.AsyncIOSpec
 import org.scalatest.EitherValues

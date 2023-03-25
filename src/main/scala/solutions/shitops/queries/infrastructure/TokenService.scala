@@ -1,12 +1,12 @@
-package solutions.shitops.query.infrastructure
+package solutions.shitops.queries.infrastructure
 
 import pdi.jwt.Jwt
 import pdi.jwt.JwtAlgorithm
 import pdi.jwt.JwtCirce
 import pdi.jwt.JwtClaim
-import solutions.shitops.query.core.Domain.AuthenticationError
-import solutions.shitops.query.core.Domain.Identity
-import solutions.shitops.query.core.Domain.InvalidCredentials
+import solutions.shitops.queries.core.Domain.AuthenticationError
+import solutions.shitops.queries.core.Domain.Identity
+import solutions.shitops.queries.core.Domain.InvalidCredentials
 
 import java.time.Instant
 import scala.util.Failure

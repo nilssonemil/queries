@@ -1,6 +1,6 @@
-package solutions.shitops.query.infrastructure.ldap
+package solutions.shitops.queries.infrastructure.ldap
 
-import solutions.shitops.query.core.Domain._
+import solutions.shitops.queries.core.Domain._
 
 import java.util.Properties
 import javax.naming.AuthenticationException

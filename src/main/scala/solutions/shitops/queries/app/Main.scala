@@ -1,4 +1,4 @@
-package solutions.shitops.query.app
+package solutions.shitops.queries.app
 
 import cats.effect.IO
 import cats.effect._
@@ -13,16 +13,16 @@ import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.io._
 import org.http4s.ember.server._
-import org.http4s.implicits._
 import org.http4s.server.Router
-import solutions.shitops.query.core.Domain._
-import solutions.shitops.query.infrastructure.QuestionRepository
-import solutions.shitops.query.infrastructure.Token
-import solutions.shitops.query.infrastructure.TokenService
-import solutions.shitops.query.infrastructure.ldap.DefaultContextFactory
-import solutions.shitops.query.infrastructure.ldap.LdapConfiguration
-import solutions.shitops.query.infrastructure.ldap.LdapService
-import solutions.shitops.query.infrastructure.middleware.AuthenticationMiddleware
+import solutions.shitops.queries.infrastructure
+import solutions.shitops.queries.core.Domain._
+import solutions.shitops.queries.infrastructure.QuestionRepository
+import solutions.shitops.queries.infrastructure.Token
+import solutions.shitops.queries.infrastructure.TokenService
+import solutions.shitops.queries.infrastructure.ldap.DefaultContextFactory
+import solutions.shitops.queries.infrastructure.ldap.LdapConfiguration
+import solutions.shitops.queries.infrastructure.ldap.LdapService
+import solutions.shitops.queries.infrastructure.middleware.AuthenticationMiddleware
 
 object Main extends IOApp {
 

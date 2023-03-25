@@ -1,4 +1,4 @@
-name         := "query"
+name         := "queries"
 version      := "0.1.0-SNAPSHOT"
 scalaVersion := "2.13.10"
 val http4sVersion = "0.23.18"

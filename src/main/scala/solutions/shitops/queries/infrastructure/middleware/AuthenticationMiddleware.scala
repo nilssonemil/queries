@@ -1,4 +1,4 @@
-package solutions.shitops.query.infrastructure.middleware
+package solutions.shitops.queries.infrastructure.middleware
 
 import cats.data
 import cats.data.Kleisli
@@ -16,9 +16,9 @@ import org.http4s.dsl.io._
 import org.http4s.headers.Authorization
 import org.http4s.server.AuthMiddleware
 import org.http4s.syntax.header
-import solutions.shitops.query.core.Domain._
-import solutions.shitops.query.infrastructure.Token
-import solutions.shitops.query.infrastructure.TokenService
+import solutions.shitops.queries.core.Domain._
+import solutions.shitops.queries.infrastructure.Token
+import solutions.shitops.queries.infrastructure.TokenService
 
 import scala.ref.ReferenceQueue
 

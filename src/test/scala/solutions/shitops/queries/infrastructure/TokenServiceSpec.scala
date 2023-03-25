@@ -1,8 +1,10 @@
-package solutions.shitops.query.infrastructure
+package solutions.shitops.queries.infrastructure
 
-import solutions.shitops.query.BaseSpec
-import solutions.shitops.query.core.Domain.Identity
+import solutions.shitops.queries.BaseSpec
+import solutions.shitops.queries.core.Domain.Identity
 
+import solutions.shitops.queries.infrastructure.{Token, TokenService}
+import solutions.shitops.queries.core.Domain
 class TokenServiceSpec extends BaseSpec {
   val service = new TokenService("secret", 10000)
 

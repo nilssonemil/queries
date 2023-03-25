@@ -1,14 +1,14 @@
-package solutions.shitops.query.infrastructure.ldap
+package solutions.shitops.queries.infrastructure.ldap
 
-import solutions.shitops.query.BaseSpec
-import solutions.shitops.query.core.Domain
-import solutions.shitops.query.core.Domain.AuthenticationError
-import solutions.shitops.query.core.Domain.InvalidConfiguration
-import solutions.shitops.query.core.Domain.InvalidCredentials
-import solutions.shitops.query.core.Domain.Password
-import solutions.shitops.query.core.Domain.UnexpectedError
-import solutions.shitops.query.core.Domain.Username
-import solutions.shitops.query.core.Domain._
+import solutions.shitops.queries.BaseSpec
+import solutions.shitops.queries.core.Domain
+import solutions.shitops.queries.core.Domain.AuthenticationError
+import solutions.shitops.queries.core.Domain.InvalidConfiguration
+import solutions.shitops.queries.core.Domain.InvalidCredentials
+import solutions.shitops.queries.core.Domain.Password
+import solutions.shitops.queries.core.Domain.UnexpectedError
+import solutions.shitops.queries.core.Domain.Username
+import solutions.shitops.queries.core.Domain._
 
 import java.util.Properties
 import javax.naming.AuthenticationException
@@ -23,6 +23,9 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
+import solutions.shitops.queries.infrastructure.ldap.{LdapConfiguration, SecurityPrincipal, LdapService}
+import solutions.shitops.queries.infrastructure.ldap.{Context, ContextFactory}
+import solutions.shitops.queries.core.Domain
 class LdapServiceSpec extends BaseSpec {
   val contextFactory = new ContextFactory {
     override def create(properties: Properties): Try[Context] =

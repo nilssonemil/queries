@@ -1,4 +1,4 @@
-package solutions.shitops.query.infrastructure.ldap
+package solutions.shitops.queries.infrastructure.ldap
 
 import java.util.Properties
 import scala.util.Try

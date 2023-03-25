@@ -1,4 +1,4 @@
-package solutions.shitops.query.core
+package solutions.shitops.queries.core
 
 object Domain {
   case class Username(value: String)
