@@ -63,7 +63,7 @@ class AuthenticationMiddleware(authService: AuthenticationService, tokenService:
         identity => {
           val authedRequest = AuthedRequest.apply(context = identity, req = req)
           service(authedRequest)
-        }
+        },
       )
     }
 
