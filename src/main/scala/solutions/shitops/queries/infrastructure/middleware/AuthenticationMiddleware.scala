@@ -1,50 +1,43 @@
 package solutions.shitops.queries.infrastructure.middleware
 
-import cats.data
-import cats.data.Kleisli
-import cats.data.OptionT
+import cats.data.{EitherT, Kleisli, OptionT}
 import cats.effect.IO
-import cats.effect._
-import cats.implicits._
-import cats.syntax.all._
-import org.http4s.BasicCredentials
-import org.http4s.CharsetRange.*
-import org.http4s.Request
-import org.http4s._
-import org.http4s.dsl.impl.ResponseGenerator
-import org.http4s.dsl.io._
+import org.http4s.{Request, _}
 import org.http4s.headers.Authorization
-import org.http4s.server.AuthMiddleware
-import org.http4s.syntax.header
 import solutions.shitops.queries.core.Domain._
-import solutions.shitops.queries.infrastructure.Token
-import solutions.shitops.queries.infrastructure.TokenService
+import solutions.shitops.queries.core.UserRepository
+import solutions.shitops.queries.infrastructure.{Token, TokenService}
 
-import scala.ref.ReferenceQueue
+class AuthenticationMiddleware(
+    authService: AuthenticationService,
+    tokenService: TokenService,
+    userRepository: UserRepository,
+) {
 
-class AuthenticationMiddleware(authService: AuthenticationService, tokenService: TokenService) {
-
-  case class Credentials(username: Username, password: Password)
+  private case class Credentials(username: Username, password: Password)
 
   def basicAuth(service: AuthedRoutes[Identity, IO]): HttpRoutes[IO] =
     Kleisli { (req: Request[IO]) =>
-      val identity = for {
-        authHeader  <- getAuthorizationHeader(req)
-        credentials <- getBasicCredentials(authHeader)
-        identity    <- authenticate(credentials)
-      } yield identity
-
-      val response                            = identity.toOption.map(respond(service, req, _))
-      val continue: OptionT[IO, Response[IO]] = OptionT.none
-
-      response.getOrElse(continue)
+      for {
+        authHeader  <- EitherT.fromEither[IO](getAuthorizationHeader(req)).toOption
+        credentials <- EitherT.fromEither[IO](getBasicCredentials(authHeader)).toOption
+        identity    <- EitherT(authenticate(credentials)).toOption
+        user        <- EitherT.liftF(findOrCreate(identity)).toOption
+        resp        <- createResponse(service, req, user.identity)
+      } yield resp
     }
 
-  val respond: (AuthedRoutes[Identity, IO], Request[IO], Identity) => OptionT[IO, Response[IO]] =
-    (service, request, identity) => {
-      val authedRequest = AuthedRequest.apply(context = identity, req = request)
-      service(authedRequest)
-    }
+  private val findOrCreate: Identity => IO[User] = identity =>
+    userRepository
+      .findByIdentity(identity)
+      .flatMap {
+        case Some(user) => IO.pure(user)
+        case None       => userRepository.create(User(identity))
+      }
+
+  private val createResponse
+      : (AuthedRoutes[Identity, IO], Request[IO], Identity) => OptionT[IO, Response[IO]] =
+    (service, request, identity) => service(AuthedRequest.apply(context = identity, req = request))
 
   def tokenAuth(service: AuthedRoutes[Identity, IO]): HttpRoutes[IO] =
     Kleisli { (req: Request[IO]) =>
@@ -89,6 +82,6 @@ class AuthenticationMiddleware(authService: AuthenticationService, tokenService:
         case None         => Left(InvalidCredentials)
       }
 
-  private val authenticate: Credentials => Either[AuthenticationError, Identity] =
+  private val authenticate: Credentials => IO[Either[AuthenticationError, Identity]] =
     credentials => authService.authenticate(credentials.username, credentials.password)
 }

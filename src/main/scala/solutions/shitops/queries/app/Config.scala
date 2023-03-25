@@ -37,7 +37,7 @@ object Config {
     val ldapUri                  = config.getString("queries.ldap.uri")
     val secretKey                = config.getString("queries.security.secretKey")
     val tokenExpirationInSeconds = config.getInt("queries.security.expirationInSeconds")
-    return new DefaultConfig(
+    new DefaultConfig(
       server = ServerConfig(serverAddress, serverPort),
       ldap = LdapConfig(ldapUri),
       db = DatabaseConfig(databaseUri, databaseUser, databasePass, databasePoolSize),
