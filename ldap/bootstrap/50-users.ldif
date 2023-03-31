@@ -21,3 +21,12 @@ uid: marie.curie
 userPassword: marie
 objectClass: top
 objectClass: inetOrgPerson
+
+# users - carolina.marin
+dn: uid=carolina.marin,ou=users,dc=queries,dc=org
+cn: Carolina
+sn: Marin
+uid: carolina.marin
+userPassword: carolina
+objectClass: top
+objectClass: inetOrgPerson
