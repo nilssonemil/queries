@@ -38,17 +38,11 @@ class App(config: Config, transactor: HikariTransactor[IO]) {
       Ok(response)
     }
 
-  private def publicRoutes(transactor: HikariTransactor[IO]) =
-    HttpRoutes.of[IO] { case GET -> Root / "questions" =>
-      QuestionRepository.getQuestions.transact(transactor).flatMap(Ok(_))
-    }
+  private def publicRoutes(transactor: HikariTransactor[IO]): HttpRoutes[IO] =
+    Questions.Routes.publicRoutes(transactor)
 
-  private def privateRoutes(
-      transactor: HikariTransactor[IO],
-  ): AuthedRoutes[Identity, IO] =
-    AuthedRoutes.of { case POST -> Root / "questions" as identity =>
-      Created(s"Welcome, ${identity.value}")
-    }
+  private def privateRoutes(transactor: HikariTransactor[IO]): AuthedRoutes[Identity, IO] =
+    Questions.Routes.privateRoutes(transactor)
 
   private def routes(transactor: HikariTransactor[IO]): HttpRoutes[IO] =
     middleware.basicAuth(tokenRoutes) <+>

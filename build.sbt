@@ -9,6 +9,7 @@ libraryDependencies ++= Seq(
   "org.http4s"           %% "http4s-dsl"                    % http4sVersion,
   "org.http4s"           %% "http4s-circe"                  % http4sVersion,
   "io.circe"             %% "circe-generic"                 % circeVersion,
+  "io.circe"             %% "circe-literal"                 % circeVersion,
   "org.tpolecat"         %% "doobie-core"                   % doobieVersion,
   "org.tpolecat"         %% "doobie-hikari"                 % doobieVersion,
   "org.tpolecat"         %% "doobie-postgres"               % doobieVersion,
@@ -16,7 +17,6 @@ libraryDependencies ++= Seq(
   "com.github.jwt-scala" %% "jwt-circe"                     % "9.2.0",
   "com.typesafe"          % "config"                        % "1.4.2",
   // Test dependencies
-  "org.scalatest"        %% "scalatest-freespec"            % "3.2.15"     % Test,
-  "org.typelevel"        %% "cats-effect-testing-scalatest" % "1.4.0"      % Test,
-  "io.circe"             %% "circe-literal"                 % circeVersion % Test,
+  "org.scalatest"        %% "scalatest-freespec"            % "3.2.15" % Test,
+  "org.typelevel"        %% "cats-effect-testing-scalatest" % "1.4.0"  % Test,
 )
