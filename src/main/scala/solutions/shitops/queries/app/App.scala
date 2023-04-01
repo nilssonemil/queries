@@ -17,6 +17,7 @@ import doobie.implicits._
 import org.http4s.dsl.io._
 import solutions.shitops.queries.infrastructure.QuestionRepository
 import solutions.shitops.queries.infrastructure.ldap.{ContextFactory, LdapService} // TODO: Remove
+import org.http4s.server.middleware._
 
 class App(config: Config, transactor: HikariTransactor[IO]) {
 
@@ -27,7 +28,7 @@ class App(config: Config, transactor: HikariTransactor[IO]) {
   private val middleware            =
     new AuthenticationMiddleware(authenticationService, tokenService, userRepository)
 
-  def build() = Router("/" -> routes(transactor)).orNotFound
+  def build() = Router("/" -> CORS(routes(transactor))).orNotFound
 
   case class TokenResponse(token: String)
 
