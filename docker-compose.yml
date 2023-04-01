@@ -33,7 +33,7 @@ services:
       - ./ldap/bootstrap/50-users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-users.ldif
       # Persist data
       - ldap-data:/var/lib/ldap
-      - ldap-config:/etc/ldap/slap.d
+      - ldap-config:/etc/ldap/slapd.d
 volumes:
   psql-data:
   ldap-data:
