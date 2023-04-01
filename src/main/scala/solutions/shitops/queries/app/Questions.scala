@@ -50,7 +50,7 @@ object Questions {
           json          <- deserialize(req.req)
           question      <- IO(createQuestion(json, identity))
           savedQuestion <- Repository.save(question)(xa)
-          response      <- Ok(savedQuestion)
+          response      <- Created(savedQuestion)
         } yield response
       }
     val publicRoutes: HikariTransactor[IO] => HttpRoutes[IO]              = xa =>
