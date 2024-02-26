@@ -8,3 +8,11 @@ CREATE TABLE questions (
     summary       VARCHAR(100) NOT NULL,
     description VARCHAR(1000) NOT NULL
 );
+
+CREATE TABLE answers (
+    id          UUID PRIMARY KEY,
+    question    UUID REFERENCES questions(id),
+    answerer    VARCHAR(256) REFERENCES users(id),
+    text        TEXT NOT NULL,
+    answered_at TIMESTAMP
+);
