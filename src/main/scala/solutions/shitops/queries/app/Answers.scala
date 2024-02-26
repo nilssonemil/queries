@@ -125,7 +125,7 @@ object Answers {
 
     def save(answer: Answer)(implicit xa: HikariTransactor[IO]): IO[Answer] = {
       val answerSchema = AnswerSchema.fromAnswer(answer)
-      sql"insert into answers(id, answerer, text, answered_at) values($answerSchema)"
+      sql"insert into answers(id, question, answerer, text, answered_at) values($answerSchema)"
         .update
         .run
         .transact(xa)
