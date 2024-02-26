@@ -27,7 +27,7 @@ services:
       LDAP_BASE_DN: dc=queries,dc=org
       LDAP_ADMIN_USERNAME: admin
       LDAP_ADMIN_PASSWORD: admin
-      LDAP_REMOVE_CONFIG_AFTER_SETUP: false
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: 'false'
     volumes:
       # Load bootstrapping files
       - ./ldap/bootstrap/50-users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/50-users.ldif
