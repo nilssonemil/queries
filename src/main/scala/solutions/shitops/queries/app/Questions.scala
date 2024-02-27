@@ -85,9 +85,10 @@ object Questions {
       schemas.groupBy(_._1).values.map(schemaToQuestion).toList
 
     private val schemaToQuestion: List[QuestionWithAnswers] => Question = schemas => {
-      val answers: List[Answer] = schemas.map {
+      val answers: List[Answer] = schemas.flatMap {
         case (questionId, _, _, _, Some(answerId), Some(answerAuthor), Some(answerText), Some(answeredAt)) =>
-          Answer(answerId, questionId, Identity(answerAuthor), answerText, answeredAt)
+          Some(Answer(answerId, questionId, Identity(answerAuthor), answerText, answeredAt))
+        case _ => None
       }
       val (id, author, summary, description, _, _, _, _) = schemas.head
       Question(id, answers, User(Identity(author)), summary, description)
