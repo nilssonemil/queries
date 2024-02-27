@@ -38,7 +38,7 @@ object Answers {
       "key": ${answer.key},
       "author": ${answer.author.value},
       "question": ${answer.question},
-      "answerer": ${answer.author.value},
+      "text": ${answer.text},
       "answeredAt": ${answer.answeredAt}
     }"""
   }
