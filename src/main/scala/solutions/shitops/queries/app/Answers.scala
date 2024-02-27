@@ -31,20 +31,14 @@ import java.time.ZoneOffset
 import org.http4s.HttpRoutes
 
 object Answers {
-  case class Answer(key: UUID, question: UUID, answerer: Identity, text: String, answeredAt: UtcTime)
-  case class UtcTime(value: LocalDateTime)
-  object UtcTime {
-    def now() = {
-    val currentTimeUTC: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-    UtcTime(currentTimeUTC)
-    }
-  }
+  case class Answer(key: UUID, question: UUID, author: Identity, text: String, answeredAt: Instant)
 
   implicit val encoder: Encoder[Answer] = Encoder.instance { (answer: Answer) =>
     json"""{
       "key": ${answer.key},
+      "author": ${answer.author.value},
       "question": ${answer.question},
-      "answerer": ${answer.answerer},
+      "answerer": ${answer.author.value},
       "answeredAt": ${answer.answeredAt}
     }"""
   }
@@ -53,7 +47,7 @@ object Answers {
   implicit val answerDecoder: EntityDecoder[IO, AnswerRequest] = jsonOf[IO, AnswerRequest]
   val deserialize: Request[IO] => IO[AnswerRequest]            = req => req.as[AnswerRequest]
   val createAnswer: (AnswerRequest, Identity, UUID) => Answer  = (req, identity, question) =>
-    Answer(UUID.randomUUID(), question, identity, req.text, UtcTime.now())
+    Answer(UUID.randomUUID(), question, identity, req.text, Instant.now())
 
   implicit val uuidQueryParamDecoder: QueryParamDecoder[UUID] =
     QueryParamDecoder[String].emap { str =>
@@ -98,34 +92,22 @@ object Answers {
   }
 
   object Repository {
-    case class AnswerSchema(
-        id: UUID,
-        question: UUID,
-        answerer: String,
-        text: String,
-        answeredAt: LocalDateTime,
-    )                   {
-      def toAnswer = Answer(
-        key = id,
-        question = question,
-        answerer = Identity(answerer),
-        text = text,
-        answeredAt = UtcTime(answeredAt),
+    type AnswerSchema = (UUID, UUID, String, String, Instant)
+    private val toSchema: Answer => AnswerSchema =
+      a => (
+        a.key,
+        a.question,
+        a.author.value,
+        a.text,
+        a.answeredAt
       )
-    }
-    object AnswerSchema {
-      def fromAnswer(answer: Answer) = AnswerSchema(
-        id = answer.key,
-        question = answer.question,
-        answerer = answer.answerer.value,
-        text = answer.text,
-        answeredAt = answer.answeredAt.value,
-      )
-    }
+
+    private val fromSchema: AnswerSchema => Answer =
+      s => Answer(s._1, s._2, Identity(s._3), s._4, s._5)
 
     def save(answer: Answer)(implicit xa: HikariTransactor[IO]): IO[Answer] = {
-      val answerSchema = AnswerSchema.fromAnswer(answer)
-      sql"insert into answers(id, question, answerer, text, answered_at) values($answerSchema)"
+      val answerSchema = toSchema(answer)
+      sql"insert into answers(id, question, author, text, answered_at) values($answerSchema)"
         .update
         .run
         .transact(xa)
@@ -133,10 +115,10 @@ object Answers {
     }
 
     def findAllByQuestion(question: UUID)(implicit xa: HikariTransactor[IO]): IO[List[Answer]] =
-      sql"select id, question, answerer, text, answered_at from answers where question = ${question} order by answered_at"
+      sql"select id, question, author, text, answered_at from answers where question = ${question} order by answered_at"
         .query[AnswerSchema]
+        .map(fromSchema)
         .to[List]
-        .map(_.map(_.toAnswer))
         .transact(xa)
   }
 }

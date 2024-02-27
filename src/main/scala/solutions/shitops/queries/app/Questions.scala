@@ -20,18 +20,27 @@ import solutions.shitops.queries.core.Domain.Identity
 import solutions.shitops.queries.core.Domain.User
 
 import java.util.UUID
+import java.time.Instant
+import solutions.shitops.queries.app.Answers.Answer
 
 object Questions {
 
   case class QuestionRequest(summary: String, description: String)
   implicit val questionDecoder: EntityDecoder[IO, QuestionRequest] = jsonOf[IO, QuestionRequest]
 
-  case class Question(key: UUID, questioner: User, summary: String, description: String)
+  case class Question(
+      key: UUID,
+      answers: List[Answer],
+      author: User,
+      summary: String,
+      description: String,
+  )
 
   implicit val encoder: Encoder[Question] = Encoder.instance { (question: Question) =>
     json"""{
            "key": ${question.key},
-           "questioner": ${question.questioner.identity.value},
+           "answers": ${question.answers},
+           "author": ${question.author.identity.value},
            "summary": ${question.summary},
            "description": ${question.description}
            }"""
@@ -41,7 +50,7 @@ object Questions {
     req => req.as[QuestionRequest]
 
   val createQuestion: (QuestionRequest, Identity) => Question =
-    (req, identity) => Question(UUID.randomUUID(), User(identity), req.summary, req.description)
+    (req, identity) => Question(UUID.randomUUID(), List(), User(identity), req.summary, req.description)
 
   object Routes {
     val privateRoutes: HikariTransactor[IO] => AuthedRoutes[Identity, IO] = xa =>
@@ -63,38 +72,59 @@ object Questions {
   }
 
   object Repository {
-    case class QuestionSchema(id: UUID, questioner: String, summary: String, description: String) {
-      def toQuestion = Question(
-        key = id,
-        questioner = User(Identity(questioner)),
-        summary = summary,
-        description = description,
-      )
-    }
-    object QuestionSchema                                                                         {
-      def fromQuestion(question: Question) = QuestionSchema(
-        id = question.key,
-        questioner = question.questioner.identity.value,
-        summary = question.summary,
-        description = question.description,
-      )
+    private type QuestionSchema = ( UUID, String, String, String )
+    private type QuestionWithAnswers = (
+        UUID, String, String, String,
+        Option[UUID], Option[String], Option[String], Option[Instant],
+    )
+
+    /**
+     * Groups all questions with the same ID together, to collect all answers in one Question
+     */
+    private val schemaToQuestions: List[QuestionWithAnswers] => List[Question] = schemas =>
+      schemas.groupBy(_._1).values.map(schemaToQuestion).toList
+
+    private val schemaToQuestion: List[QuestionWithAnswers] => Question = schemas => {
+      val answers: List[Answer] = schemas.map {
+        case (questionId, _, _, _, Some(answerId), Some(answerAuthor), Some(answerText), Some(answeredAt)) =>
+          Answer(answerId, questionId, Identity(answerAuthor), answerText, answeredAt)
+      }
+      val (id, author, summary, description, _, _, _, _) = schemas.head
+      Question(id, answers, User(Identity(author)), summary, description)
     }
 
+    def getAll()(implicit xa: HikariTransactor[IO]) : IO[List[Question]] = {
+      sql"""
+        SELECT
+          q.id, q.author, q.summary, q.description,
+          a.id, a.author, a.text, a.answered_at
+        FROM
+          questions q
+        LEFT JOIN
+          answers a
+        ON
+          q.id = a.question"""
+        .query[QuestionWithAnswers]
+        .to[List]
+        .map(schemaToQuestions)
+        .transact(xa)
+    }
+
+    private val toSchema: Question => QuestionSchema =
+      question => (
+        question.key,
+        question.author.identity.value,
+        question.summary,
+        question.description,
+      )
+
     def save(question: Question)(implicit xa: HikariTransactor[IO]): IO[Question] = {
-      val questionSchema = QuestionSchema.fromQuestion(question)
-      sql"insert into questions (id, questioner, summary, description) values ($questionSchema)"
+      val schema = toSchema(question)
+      sql"insert into questions (id, author, summary, description) values ($schema)"
         .update
         .run
         .transact(xa)
-        .map((_: Any) => question)
+        .map(_ => question)
     }
-
-    def getAll()(implicit xa: HikariTransactor[IO]): IO[List[Question]] =
-      sql"select id, questioner, summary, description from questions"
-        .query[QuestionSchema]
-        .to[List]
-        .map(_.map(_.toQuestion))
-        .transact(xa)
   }
-
 }
