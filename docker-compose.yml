@@ -1,5 +1,12 @@
 version: "3.1"
 services:
+  cdn:
+    image: nginx:latest
+    ports:
+      - 5000:80
+    volumes:
+      - ./nginx/bootstrap/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/bootstrap/images/:/usr/share/nginx/html/images/
   db:
     image: postgres
     ports:
