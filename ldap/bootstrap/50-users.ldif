@@ -22,11 +22,20 @@ userPassword: marie
 objectClass: top
 objectClass: inetOrgPerson
 
-# users - carolina.marin
-dn: uid=carolina.marin,ou=users,dc=queries,dc=org
-cn: Carolina
-sn: Marin
-uid: carolina.marin
-userPassword: carolina
+# users - anders.antonsen
+dn: uid=anders.antonsen,ou=users,dc=queries,dc=org
+cn: Anders
+sn: Antonsen
+uid: anders.antonsen
+userPassword: anders
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - salvador.dali
+dn: uid=salvador.dali,ou=users,dc=queries,dc=org
+cn: Salvador
+sn: Dali
+uid: salvador.dali
+userPassword: salvador
 objectClass: top
 objectClass: inetOrgPerson

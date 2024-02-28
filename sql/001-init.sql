@@ -1,5 +1,6 @@
 CREATE TABLE users (
-    id          VARCHAR(256) PRIMARY KEY
+    id          VARCHAR(256) PRIMARY KEY,
+    avatar      TEXT
 );
 
 CREATE TABLE questions (

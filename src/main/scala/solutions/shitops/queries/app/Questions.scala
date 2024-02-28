@@ -22,6 +22,7 @@ import solutions.shitops.queries.core.Domain.User
 import java.util.UUID
 import java.time.Instant
 import solutions.shitops.queries.app.Answers.Answer
+import java.net.URI
 
 object Questions {
 
@@ -36,11 +37,19 @@ object Questions {
       description: String,
   )
 
+  // TODO: Conditionally include avatar / make sure that Option.None is sent gracefully
+  implicit val userEncoder: Encoder[User] = Encoder.instance { (user: User) =>
+    json"""{
+      "id": ${user.identity.value},
+      "avatar": ${user.avatar}
+    }"""
+  }
+
   implicit val encoder: Encoder[Question] = Encoder.instance { (question: Question) =>
     json"""{
            "key": ${question.key},
            "answers": ${question.answers},
-           "author": ${question.author.identity.value},
+           "author": ${question.author},
            "summary": ${question.summary},
            "description": ${question.description}
            }"""
@@ -49,15 +58,15 @@ object Questions {
   val deserialize: Request[IO] => IO[QuestionRequest] =
     req => req.as[QuestionRequest]
 
-  val createQuestion: (QuestionRequest, Identity) => Question =
-    (req, identity) => Question(UUID.randomUUID(), List(), User(identity), req.summary, req.description)
+  val createQuestion: (QuestionRequest, User) => Question =
+    (req, user) => Question(UUID.randomUUID(), List(), user, req.summary, req.description)
 
   object Routes {
     val privateRoutes: HikariTransactor[IO] => AuthedRoutes[Identity, IO] = xa =>
       AuthedRoutes.of { case req @ POST -> Root / "questions" as identity =>
         for {
           json          <- deserialize(req.req)
-          question      <- IO(createQuestion(json, identity))
+          question      <- IO(createQuestion(json, User(identity, None))) // TODO: Note that this will return to consumer as author with possibly incorrect avatar
           savedQuestion <- Repository.save(question)(xa)
           response      <- Created(savedQuestion)
         } yield response
@@ -74,8 +83,9 @@ object Questions {
   object Repository {
     private type QuestionSchema = ( UUID, String, String, String )
     private type QuestionWithAnswers = (
-        UUID, String, String, String,
-        Option[UUID], Option[String], Option[String], Option[Instant],
+        UUID, String, String, String, // question
+        Option[UUID], Option[String], Option[String], Option[Instant], // answer
+        Option[String], // user
     )
 
     /**
@@ -86,26 +96,31 @@ object Questions {
 
     private val schemaToQuestion: List[QuestionWithAnswers] => Question = schemas => {
       val answers: List[Answer] = schemas.flatMap {
-        case (questionId, _, _, _, Some(answerId), Some(answerAuthor), Some(answerText), Some(answeredAt)) =>
-          Some(Answer(answerId, questionId, Identity(answerAuthor), answerText, answeredAt))
+        case (questionId, _, _, _, Some(answerId), Some(answerAuthor), Some(answerText), Some(answeredAt), avatar) =>
+          Some(Answer(answerId, questionId, User(Identity(answerAuthor), avatar.map(new URI(_))), answerText, answeredAt))
         case _ => None
       }
-      val (id, author, summary, description, _, _, _, _) = schemas.head
-      Question(id, answers, User(Identity(author)), summary, description)
+      val (id, author, summary, description, _, _, _, _, avatar) = schemas.head
+      Question(id, answers, User(Identity(author), avatar.map(new URI(_))), summary, description)
     }
 
     def getAll()(implicit xa: HikariTransactor[IO]) : IO[List[Question]] = {
       sql"""
         SELECT
           q.id, q.author, q.summary, q.description,
-          a.id, a.author, a.text, a.answered_at
+          a.id, a.author, a.text, a.answered_at,
+          u.avatar
         FROM
           questions q
         LEFT JOIN
           answers a
         ON
-          q.id = a.question"""
-        .query[QuestionWithAnswers]
+          q.id = a.question
+        LEFT JOIN
+          users u
+        ON
+          q.author = u.id"""
+        .query[QuestionWithAnswers] // TODO: Note that all answers has to be fetched as well with author
         .to[List]
         .map(schemaToQuestions)
         .transact(xa)
@@ -121,11 +136,18 @@ object Questions {
 
     def save(question: Question)(implicit xa: HikariTransactor[IO]): IO[Question] = {
       val schema = toSchema(question)
-      sql"insert into questions (id, author, summary, description) values ($schema)"
-        .update
-        .run
+      sql"""
+        INSERT INTO
+          questions (id, author, summary, description)
+        VALUES
+          ($schema)
+        RETURNING
+          (SELECT avatar FROM users WHERE id = ${schema._2})
+        """
+        .query[Option[String]] // TODO: Do we need to fetch answers here too? Or can we assume it is right?
+        .unique
         .transact(xa)
-        .map(_ => question)
+        .map(avatar => question.copy(author = question.author.copy(avatar = avatar.map(new URI(_)))))
     }
   }
 }

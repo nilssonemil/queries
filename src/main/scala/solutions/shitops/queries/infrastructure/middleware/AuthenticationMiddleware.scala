@@ -32,7 +32,7 @@ class AuthenticationMiddleware(
       .findByIdentity(identity)
       .flatMap {
         case Some(user) => IO.pure(user)
-        case None       => userRepository.create(User(identity))
+        case None       => userRepository.create(User(identity, None))
       }
 
   private val createResponse
