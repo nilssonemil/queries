@@ -85,7 +85,8 @@ object Questions {
     private type QuestionWithAnswers = (
         UUID, String, String, String, // question
         Option[UUID], Option[String], Option[String], Option[Instant], // answer
-        Option[String], // user
+        Option[String], // NOTE: question author avatar
+        Option[String], // NOTE: answer author avatar
     )
 
     /**
@@ -96,11 +97,11 @@ object Questions {
 
     private val schemaToQuestion: List[QuestionWithAnswers] => Question = schemas => {
       val answers: List[Answer] = schemas.flatMap {
-        case (questionId, _, _, _, Some(answerId), Some(answerAuthor), Some(answerText), Some(answeredAt), avatar) =>
+        case (questionId, _, _, _, Some(answerId), Some(answerAuthor), Some(answerText), Some(answeredAt), _, avatar) =>
           Some(Answer(answerId, questionId, User(Identity(answerAuthor), avatar.map(new URI(_))), answerText, answeredAt))
         case _ => None
       }
-      val (id, author, summary, description, _, _, _, _, avatar) = schemas.head
+      val (id, author, summary, description, _, _, _, _, avatar, _) = schemas.head
       Question(id, answers, User(Identity(author), avatar.map(new URI(_))), summary, description)
     }
 
@@ -109,7 +110,7 @@ object Questions {
         SELECT
           q.id, q.author, q.summary, q.description,
           a.id, a.author, a.text, a.answered_at,
-          u.avatar
+          qu.avatar, au.avatar
         FROM
           questions q
         LEFT JOIN
@@ -117,9 +118,13 @@ object Questions {
         ON
           q.id = a.question
         LEFT JOIN
-          users u
+          users qu
         ON
-          q.author = u.id"""
+          q.author = qu.id
+        LEFT JOIN
+          users au
+        ON
+          a.author = au.id"""
         .query[QuestionWithAnswers] // TODO: Note that all answers has to be fetched as well with author
         .to[List]
         .map(schemaToQuestions)
