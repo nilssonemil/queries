@@ -9,7 +9,7 @@ dn: uid=tom.hanks,ou=users,dc=queries,dc=org
 cn: Tom
 sn: Hanks
 uid: tom.hanks
-userPassword: tom
+userPassword: password
 objectClass: top
 objectClass: inetOrgPerson
 
@@ -18,7 +18,7 @@ dn: uid=marie.curie,ou=users,dc=queries,dc=org
 cn: Marie
 sn: Curie
 uid: marie.curie
-userPassword: marie
+userPassword: password
 objectClass: top
 objectClass: inetOrgPerson
 
@@ -27,7 +27,7 @@ dn: uid=anders.antonsen,ou=users,dc=queries,dc=org
 cn: Anders
 sn: Antonsen
 uid: anders.antonsen
-userPassword: anders
+userPassword: password
 objectClass: top
 objectClass: inetOrgPerson
 
@@ -36,6 +36,222 @@ dn: uid=salvador.dali,ou=users,dc=queries,dc=org
 cn: Salvador
 sn: Dali
 uid: salvador.dali
-userPassword: salvador
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - john.doe
+dn: uid=john.doe,ou=users,dc=queries,dc=org
+cn: John
+sn: Doe
+uid: john.doe
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - alice.wonderland
+dn: uid=alice.wonderland,ou=users,dc=queries,dc=org
+cn: Alice
+sn: Wonderland
+uid: alice.wonderland
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - clark.kent
+dn: uid=clark.kent,ou=users,dc=queries,dc=org
+cn: Clark
+sn: Kent
+uid: clark.kent
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - bruce.wayne
+dn: uid=bruce.wayne,ou=users,dc=queries,dc=org
+cn: Bruce
+sn: Wayne
+uid: bruce.wayne
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - lara.croft
+dn: uid=lara.croft,ou=users,dc=queries,dc=org
+cn: Lara
+sn: Croft
+uid: lara.croft
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - indiana.jones
+dn: uid=indiana.jones,ou=users,dc=queries,dc=org
+cn: Indiana
+sn: Jones
+uid: indiana.jones
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - walter.white
+dn: uid=walter.white,ou=users,dc=queries,dc=org
+cn: Walter
+sn: White
+uid: walter.white
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - daenerys.targaryen
+dn: uid=daenerys.targaryen,ou=users,dc=queries,dc=org
+cn: Daenerys
+sn: Targaryen
+uid: daenerys.targaryen
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - sherlock.holmes
+dn: uid=sherlock.holmes,ou=users,dc=queries,dc=org
+cn: Sherlock
+sn: Holmes
+uid: sherlock.holmes
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - james.bond
+dn: uid=james.bond,ou=users,dc=queries,dc=org
+cn: James
+sn: Bond
+uid: james.bond
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - elizabeth.bennet
+dn: uid=elizabeth.bennet,ou=users,dc=queries,dc=org
+cn: Elizabeth
+sn: Bennet
+uid: elizabeth.bennet
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - tony.stark
+dn: uid=tony.stark,ou=users,dc=queries,dc=org
+cn: Tony
+sn: Stark
+uid: tony.stark
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - harry.potter
+dn: uid=harry.potter,ou=users,dc=queries,dc=org
+cn: Harry
+sn: Potter
+uid: harry.potter
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - hermione.granger
+dn: uid=hermione.granger,ou=users,dc=queries,dc=org
+cn: Hermione
+sn: Granger
+uid: hermione.granger
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - frodo.baggins
+dn: uid=frodo.baggins,ou=users,dc=queries,dc=org
+cn: Frodo
+sn: Baggins
+uid: frodo.baggins
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - aragorn
+dn: uid=aragorn,ou=users,dc=queries,dc=org
+cn: Aragorn
+sn: Son of Arathorn
+uid: aragorn.sonofarathorn
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - luke.skywalker
+dn: uid=luke.skywalker,ou=users,dc=queries,dc=org
+cn: Luke
+sn: Skywalker
+uid: luke.skywalker
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - leia.organa
+dn: uid=leia.organa,ou=users,dc=queries,dc=org
+cn: Leia
+sn: Organa
+uid: leia.organa
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - samwise.gamgee
+dn: uid=samwise.gamgee,ou=users,dc=queries,dc=org
+cn: Samwise
+sn: Gamgee
+uid: samwise.gamgee
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - spock
+dn: uid=spock,ou=users,dc=queries,dc=org
+cn: Spock
+sn: Vulcan
+uid: spock
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - captain.kirk
+dn: uid=captain.kirk,ou=users,dc=queries,dc=org
+cn: Captain
+sn: Kirk
+uid: captain.kirk
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - han.solo
+dn: uid=han.solo,ou=users,dc=queries,dc=org
+cn: Han
+sn: Solo
+uid: han.solo
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - luffy.monkey
+dn: uid=luffy.monkey,ou=users,dc=queries,dc=org
+cn: Luffy
+sn: Monkey
+uid: luffy.monkey
+userPassword: password
+objectClass: top
+objectClass: inetOrgPerson
+
+# users - naruto.uzumaki
+dn: uid=naruto.uzumaki,ou=users,dc=queries,dc=org
+cn: Naruto
+sn: Uzumaki
+uid: naruto.uzumaki
+userPassword: password
 objectClass: top
 objectClass: inetOrgPerson
