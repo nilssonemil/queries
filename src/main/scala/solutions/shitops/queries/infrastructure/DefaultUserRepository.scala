@@ -11,24 +11,18 @@ class DefaultUserRepository(xa: HikariTransactor[IO]) extends UserRepository {
 
   type UserSchema = (String, Option[String])
 
-  val toSchema: User => UserSchema = user =>
-    (user.identity.value, user.avatar.map(_.toString()))
+  val toSchema: User => UserSchema = user => (user.identity.value, user.avatar.map(_.toString()))
 
-  val fromSchema: UserSchema => User = {
-    case (id: String, avatar: Option[String]) =>
-      User(Identity(id), avatar.map(new URI(_)))
+  val fromSchema: UserSchema => User = { case (id: String, avatar: Option[String]) =>
+    User(Identity(id), avatar.map(new URI(_)))
   }
 
-  override def findByIdentity(identity: Identity): IO[Option[User]] = {
-    println("identitiy", identity)
-    val rv = sql"select id, avatar from users where id=${identity.value}"
+  override def findByIdentity(identity: Identity): IO[Option[User]] =
+    sql"select id, avatar from users where id=${identity.value}"
       .query[UserSchema]
       .map(fromSchema)
       .option
       .transact(xa)
-    println("User", rv)
-      rv
-  }
 
   override def getAll(): IO[List[User]] = ???
 

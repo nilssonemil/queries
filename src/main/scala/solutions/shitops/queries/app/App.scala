@@ -26,6 +26,7 @@ class App(config: Config, transactor: HikariTransactor[IO]) {
   private val tokenService          = new TokenService(config.security)
   private val middleware            =
     new AuthenticationMiddleware(authenticationService, tokenService, userRepository)
+  private val userService           = new UserService(userRepository)
 
   def build() = Router("/" -> CORS(routes(transactor))).orNotFound
 
@@ -42,7 +43,9 @@ class App(config: Config, transactor: HikariTransactor[IO]) {
     Questions.Routes.publicRoutes(transactor) <+> Answers.Routes.publicRoutes(transactor)
 
   private def privateRoutes(transactor: HikariTransactor[IO]): AuthedRoutes[Identity, IO] =
-    Questions.Routes.privateRoutes(transactor) <+> Answers.Routes.privateRoutes(transactor)
+    Questions.Routes.privateRoutes(transactor) <+> Answers
+      .Routes
+      .privateRoutes(transactor) <+> userService.Routes.privateRoutes
 
   private def routes(transactor: HikariTransactor[IO]): HttpRoutes[IO] =
     middleware.basicAuth(tokenRoutes) <+>
